@@ -1,0 +1,70 @@
+#+title: Hugo container image
+#+property: header-args :eval never-export :results output silent
+#+startup: content
+
+A Hugo =Dockerfile= to build OCI compliant container images.
+
+** Build
+
+Use Buildah (or docker) to build the Hugo image from the same directory as the Dockerfile.
+
+*Buildah*
+
+#+begin_src shell
+buildah build --tag hugo:<version>
+#+end_src
+
+*docker*
+
+#+begin_src shell
+docker build --tag hugo:<version> .
+#+end_src
+
+** Example usage
+
+Using the pre-built container image included within this repository, deploy the Hugo image to a Kubernetes cluster as a Pod:
+
+#+begin_src yaml :eval query
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hugo
+  labels:
+    app: hugo
+spec:
+  containers:
+  - name: hugo
+    image: ghcr.io/james5979/hugo:0.111.3
+    imagePullPolicy: IfNotPresent
+    args:
+    - "server"
+    - "--bind=0.0.0.0"
+    - "--port=1313"
+    ports:
+    - containerPort: 1313
+    volumeMounts:
+    - name: markup
+      mountPath: /usr/local/src
+  volumes:
+  - name: markup
+    hostPath:
+      path: <path-to-site-content>
+      type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hugo
+  labels:
+    app: hugo
+spec:
+  selector:
+    app: hugo
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 1313
+  type: ClusterIP
+#+end_src
+
+*WARNING*: it is [[https://gohugo.io/commands/hugo_server/#synopsis][recommended]] that you use a dedicated webserver in production (such as NGINX), since the Hugo server is primarily used for development, and is therefore less featureful. More importantly, there are major security concerns surrounding the =hostPath= volume type, so it is recommended to use a different volume type in production.

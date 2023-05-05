@@ -9,8 +9,9 @@ RUN dpkg --install \
     rm -rf /var/cache/apt/archives/hugo_${HUGO_VERSION}_linux-amd64.deb && \
     mv /usr/local/bin/hugo /usr/bin/hugo
 
-VOLUME /srv/www
 VOLUME /usr/local/src
 WORKDIR /usr/local/src
+
+EXPOSE 1313
 
 ENTRYPOINT ["hugo"]
