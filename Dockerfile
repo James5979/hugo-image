@@ -15,3 +15,4 @@ WORKDIR /usr/local/src
 EXPOSE 1313
 
 ENTRYPOINT ["hugo"]
+CMD ["--help"]

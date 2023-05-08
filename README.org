@@ -11,7 +11,7 @@ Use Buildah (or docker) to build the Hugo image from the same directory as the D
 *Buildah*
 
 #+begin_src shell
-buildah build --tag hugo:<version>
+buildah build --tag hugo:<version> .
 #+end_src
 
 *docker*
