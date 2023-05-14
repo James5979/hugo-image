@@ -39,9 +39,18 @@ spec:
     args:
     - "server"
     - "--bind=0.0.0.0"
+    - "--config=/usr/local/src/literate-devops-site/config.yaml"
+    - "--contentDir=/usr/local/src/literate-devops-site/content"
+    - "--environment=production"
+    - "--layoutDir=/usr/local/src/literate-devops-site/layouts"
     - "--port=1313"
+    - "--themesDir=/usr/local/src/literate-devops-site/themes"
     ports:
     - containerPort: 1313
+    securityContext:
+      runAsUser: 101
+      runAsGroup: 101
+      allowPrivilegeEscalation: false
     volumeMounts:
     - name: markup
       mountPath: /usr/local/src
@@ -54,14 +63,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: hugo
+  name: hugo-test
   labels:
     app: hugo
 spec:
   selector:
     app: hugo
   ports:
-  - port: 80
+  - name: http
+    port: 80
     protocol: TCP
     targetPort: 1313
   type: ClusterIP
