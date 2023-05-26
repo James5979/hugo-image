@@ -25,17 +25,61 @@ docker build --tag hugo:<version> .
 Using the pre-built container image included within this repository, deploy the Hugo image to a Kubernetes cluster as a Pod:
 
 #+begin_src yaml :eval query
-apiVersion: v1
 kind: Pod
+apiVersion: v1
 metadata:
   name: hugo
+  namespace: default
   labels:
     app: hugo
 spec:
+  imagePullSecrets:
+  - name: regcred
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
+    fsGroup: 101
+    fsGroupChangePolicy: "OnRootMismatch"
+  initContainers:
+  - name: git-sync
+    image: registry.k8s.io/git-sync/git-sync:v3.6.6
+    imagePullPolicy: IfNotPresent
+    env:
+    - name: GIT_SYNC_BRANCH
+      value: "main"
+    - name: GIT_SYNC_DEPTH
+      value: "1"
+    - name: GIT_SYNC_ONE_TIME
+      value: "true"
+    - name: GIT_SYNC_PERMISSIONS
+      value: "0750"
+    - name: GIT_SYNC_REPO
+      value: "https://github.com/James5979/literate-devops-site/"
+    - name: GIT_SYNC_ROOT
+      value: "/usr/local/src"
+    securityContext:
+      runAsUser: 65533
+      runAsGroup: 101
+      allowPrivilegeEscalation: false
+    volumeMounts:
+    - name: markup
+      mountPath: /usr/local/src
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+        ephemeral-storage: "2Gi"
+      limits:
+        cpu: "200m"
+        memory: "256Mi"
+        ephemeral-storage: "4Gi"
   containers:
   - name: hugo
-    image: ghcr.io/james5979/hugo:0.111.3
+    image: ghcr.io/james5979/hugo:0.112.2
     imagePullPolicy: IfNotPresent
+    ports:
+    - name: http
+      containerPort: 1313
     args:
     - "server"
     - "--bind=0.0.0.0"
@@ -45,8 +89,6 @@ spec:
     - "--layoutDir=/usr/local/src/literate-devops-site/layouts"
     - "--port=1313"
     - "--themesDir=/usr/local/src/literate-devops-site/themes"
-    ports:
-    - containerPort: 1313
     securityContext:
       runAsUser: 101
       runAsGroup: 101
@@ -54,11 +96,19 @@ spec:
     volumeMounts:
     - name: markup
       mountPath: /usr/local/src
+      readOnly: true
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+        ephemeral-storage: "2Gi"
+      limits:
+        cpu: "200m"
+        memory: "256Mi"
+        ephemeral-storage: "4Gi"
   volumes:
   - name: markup
-    hostPath:
-      path: <path-to-site-content>
-      type: Directory
+    emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
@@ -77,4 +127,4 @@ spec:
   type: ClusterIP
 #+end_src
 
-*WARNING*: it is [[https://gohugo.io/commands/hugo_server/#synopsis][recommended]] that you use a dedicated webserver in production (such as NGINX), since the Hugo server is primarily used for development, and is therefore less featureful. More importantly, there are major security concerns surrounding the =hostPath= volume type, so it is recommended to use a different volume type in production.
+*WARNING*: it is [[https://gohugo.io/commands/hugo_server/#synopsis][recommended]] that you use a dedicated webserver in production (such as NGINX), since the Hugo webserver is primarily used as a development server, and is therefore less featureful.
