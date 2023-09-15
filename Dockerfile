@@ -1,32 +1,25 @@
-FROM debian:stable-slim
+FROM docker.io/library/debian:stable-20230904-slim AS build
 
 ARG HUGO_VERSION=0.117.0
-ARG HUGO_UID=101
-ARG HUGO_GID=101
 
 ADD https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_${HUGO_VERSION}_linux-amd64.deb /var/cache/apt/archives/
 
 RUN dpkg --install \
     /var/cache/apt/archives/hugo_${HUGO_VERSION}_linux-amd64.deb && \
-    rm -rf /var/cache/apt/archives/hugo_${HUGO_VERSION}_linux-amd64.deb && \
-    mv /usr/local/bin/hugo /usr/bin/hugo && \
-    mkdir --parents /var/hugo && \
-    chown $HUGO_UID:$HUGO_GID /var/hugo && \
-    useradd \
-    --comment="hugo" \
-    --home-dir=/var/hugo \
-    --no-create-home \
-    --shell=/usr/sbin/nologin \
-    --uid=$HUGO_UID \
-    --system \
-    hugo
+    rm -rf /var/cache/apt/archives/hugo_${HUGO_VERSION}_linux-amd64.deb
 
-VOLUME /usr/local/src
-WORKDIR /var/hugo
+RUN mkdir /hugo
+
+FROM scratch
+
+COPY --from=build /usr/local/bin/hugo /usr/bin/hugo
+
+COPY --from=build /hugo /hugo
+
+WORKDIR /hugo
 
 EXPOSE 1313
 
-USER hugo:hugo
+ENTRYPOINT ["/usr/bin/hugo"]
 
-ENTRYPOINT ["hugo"]
 CMD ["--help"]
