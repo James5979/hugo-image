@@ -4,27 +4,27 @@
 
 A Hugo =Dockerfile= to build OCI compliant container images.
 
-** Build
+* Build
 
 Use Buildah (or docker) to build the Hugo image from the same directory as the Dockerfile.
 
 *Buildah*
 
-#+begin_src shell :var TAG="v0.117.0"
+#+begin_src shell :var TAG="v0.120.4"
 buildah build --tag hugo:$TAG .
 #+end_src
 
 *docker*
 
-#+begin_src shell :var TAG="v0.117.0"
+#+begin_src shell :var TAG="v0.120.4"
 docker build --tag hugo:$TAG .
 #+end_src
 
-** Example usage
+* Example usage
 
 Start the Hugo development server:
 
-#+begin_src shell :var TAG="v0.117.0"
+#+begin_src shell :var TAG="v0.120.4"
 podman run --rm --volume /home/user/my-site:/hugo localhost/hugo:$TAG server \
 --bind="0.0.0.0" \
 --config="config.toml" \
