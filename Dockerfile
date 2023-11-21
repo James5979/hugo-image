@@ -1,4 +1,4 @@
-FROM docker.io/library/debian:stable-20231030-slim AS build
+FROM docker.io/library/debian:stable-20231120-slim AS build
 
 ARG HUGO_VERSION=0.120.4
 
