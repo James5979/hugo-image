@@ -10,13 +10,13 @@ Use Buildah (or docker) to build the Hugo image from the same directory as the D
 
 *Buildah*
 
-#+begin_src shell :var TAG="v0.120.4"
+#+begin_src shell :var TAG="v0.121.2"
 buildah build --tag hugo:$TAG .
 #+end_src
 
 *docker*
 
-#+begin_src shell :var TAG="v0.120.4"
+#+begin_src shell :var TAG="v0.121.2"
 docker build --tag hugo:$TAG .
 #+end_src
 
@@ -24,7 +24,7 @@ docker build --tag hugo:$TAG .
 
 Start the Hugo development server:
 
-#+begin_src shell :var TAG="v0.120.4"
+#+begin_src shell :var TAG="v0.121.2"
 podman run --rm --volume /home/user/my-site:/hugo localhost/hugo:$TAG server \
 --bind="0.0.0.0" \
 --config="config.toml" \
